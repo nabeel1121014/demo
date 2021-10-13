@@ -1,15 +1,28 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import utils.RandomUserAgent;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.http.HttpClient;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class BaseTest {
     protected static final String BROWSER = System.getProperty("BROWSER", "chrome");
@@ -31,17 +44,25 @@ public class BaseTest {
                 driver = new FirefoxDriver();
                 break;
             case "chrome":
-                String chromeDriverPath;
-                if (System.getProperty("os.name").contains("Windows")) {
-                    chromeDriverPath = "lib/chromedriver.exe";
-                } else {
-                    chromeDriverPath = "lib/chromedriver";
-                }
-                System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+                if(System.getProperty("wdm.chromeDriverVersion") != null){
+                    WebDriverManager.chromedriver().version(System.getProperty("chromeDriverVersion")).setup();
+                }else
+                WebDriverManager.chromedriver().setup();
+                driver = new ChromeDriver();
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 ");
-                driver = new ChromeDriver(options);
-                driver.manage().deleteAllCookies();
+                options.addArguments("--enable-benchmarking");
+                options.addArguments("--enable-net-benchmarking");
+                options.addArguments("--no-sandbox");
+                options.addArguments("--disable-dev-shm-usage");
+                options.addArguments("--disable-extensions");
+                options.addArguments("--allow-running-insecure-content");
+                options.addArguments("--use-fake-ui-for-media-stream");
+                options.setPageLoadStrategy(PageLoadStrategy.NONE);
+                LoggingPreferences logPrefs = new LoggingPreferences();
+                logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+                logPrefs.enable(LogType.BROWSER, Level.ALL);
+                options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+                options.addArguments(RandomUserAgent.getRandomUserAgent());
                 break;
             case "internetExplorer":
                 DesiredCapabilities capabilities = DesiredCapabilities.internetExplorer();
@@ -51,6 +72,7 @@ public class BaseTest {
                 throw new RuntimeException("Browser type unsupported");
         }
     }
+
 
     @AfterAll
     public static void suiteTearDown() {

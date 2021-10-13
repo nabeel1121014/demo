@@ -8,6 +8,9 @@ To run all tests (uses Firefox by default)
 To run tests in Chrome
 ./gradle clean test -DBROWSER=chrome
 
+To run tests in Chrome with specific driver version
+./gradle clean test -DBROWSER=chrome -Dwdm.chromeDriverVersion=94.0.4606.41
+
 To run tests in IE
 gradle.bat clean test -DBROWSER=internetExplorer
 
