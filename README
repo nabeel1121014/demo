@@ -1,0 +1,13 @@
+
+Unless you have Gradle installed, you'll need to use the Gradle wrapper which is included in the project
+./gradlew or gradle.bat on Windows
+
+To run all tests (uses Firefox by default)
+./gradlew clean test
+
+To run tests in Chrome
+./gradle clean test -DBROWSER=chrome
+
+To run tests in IE
+gradle.bat clean test -DBROWSER=internetExplorer
+
